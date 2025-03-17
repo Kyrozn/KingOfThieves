@@ -1,6 +1,6 @@
 import tkinter as tk
 from map import Map
-from trap import Trap, Saw
+from trap import Trap, Saw, CELL_SIZE
 
 # Paramètres du jeu
 WIDTH = 500
@@ -8,8 +8,6 @@ HEIGHT = 400
 GRAVITY = 1
 JUMP_STRENGTH = -11
 SPEED = 5
-CELL_SIZE = 50
-
 
 class Game:
     def __init__(self, root):
