@@ -2,10 +2,8 @@ import tkinter as tk
 import player as p1
 from map import Map
 from trap import Trap, Saw, CELL_SIZE
+import config as conf
 # Paramètres du jeu
-WIDTH = 500
-HEIGHT = 400
-GRAVITY = 1
 
 class Game:
 
@@ -15,7 +13,9 @@ class Game:
         self.root.title("Jeu de Plateforme - Tkinter")
 
         # Création du Canvas
-        self.canvas = tk.Canvas(root, width=WIDTH, height=HEIGHT, bg="lightblue")
+        self.canvas = tk.Canvas(
+            root, width=conf.WIDTH, height=conf.HEIGHT, bg="lightblue"
+        )
         self.canvas.pack()
 
         # Création de la carte
@@ -25,7 +25,9 @@ class Game:
 
         # Plateformes
         self.platforms = [
-            self.canvas.create_rectangle(0, 380, WIDTH, HEIGHT, fill="green"),  # Sol
+            self.canvas.create_rectangle(
+                0, 380, conf.WIDTH, conf.HEIGHT, fill="green"
+            ),  # Sol
             self.canvas.create_rectangle(150, 300, 250, 320, fill="brown"),
             self.canvas.create_rectangle(300, 200, 400, 220, fill="brown"),
         ]
@@ -45,12 +47,11 @@ class Game:
         ChainsawButton = tk.Button(
             canvas, command=lambda: self.SetActiveTrap("ChainsawButton")
         ).place(x=400, y=300)
-
         pass
 
     def updateAttack(self):
         # Appliquer la gravité
-        self.player.player_dy += GRAVITY
+        self.player.player_dy += conf.GRAVITY
         if self.player.Right_Movement == True:
             self.player.move_right()
         else:
@@ -80,12 +81,12 @@ class Game:
             self.canvas.move(self.player.cube, -x1, 0)
             if self.player.on_ground == False:
                 self.player.player_wall_slide = True
-        if x2 > WIDTH:
-            self.canvas.move(self.player.cube, WIDTH - x2, 0)
+        if x2 > conf.WIDTH:
+            self.canvas.move(self.player.cube, conf.WIDTH - x2, 0)
             if self.player.on_ground == False:
                 self.player.player_wall_slide = True
-        if y2 > HEIGHT:
-            self.canvas.move(self.player.cube, 0, HEIGHT - y2)
+        if y2 > conf.HEIGHT:
+            self.canvas.move(self.player.cube, 0, conf.HEIGHT - y2)
             self.player.player_dy = 0
             self.player.on_ground = True
             self.player.player_wall_slide = False
@@ -94,7 +95,13 @@ class Game:
             trap_coords = trap.get_coords()
             if (x2 > trap_coords[0] and x1 < trap_coords[2] and
                    y2 > trap_coords[1] and y1 < trap_coords[3]):
-                self.canvas.create_text(WIDTH // 2, HEIGHT // 2, text="Game Over!", fill="white", font=("Arial", 50))
+                self.canvas.create_text(
+                    conf.WIDTH // 2,
+                    conf.HEIGHT // 2,
+                    text="Game Over!",
+                    fill="white",
+                    font=("Arial", 50),
+                )
                 return
 
         # Relancer la boucle de jeu

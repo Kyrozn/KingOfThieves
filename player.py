@@ -1,5 +1,5 @@
-SPEED = 5
-JUMP_STRENGTH = -11
+import config as conf
+
 class Player:
 
     def __init__(self, canvas, root):
@@ -19,17 +19,17 @@ class Player:
         self.move_right()
 
     def move_left(self):
-        self.player_dx = -SPEED
+        self.player_dx = -conf.SPEED
 
     def move_right(self):
-        self.player_dx = SPEED
+        self.player_dx = conf.SPEED
 
     def jump(self, event):
         if self.on_ground:
-            self.player_dy = JUMP_STRENGTH
+            self.player_dy = conf.JUMP_STRENGTH
             self.on_ground = False
         if self.player_wall_slide:
-            self.player_dy = JUMP_STRENGTH
+            self.player_dy = conf.JUMP_STRENGTH
             self.on_ground = False
             self.Right_Movement = not self.Right_Movement
             self.player_wall_slide = False
