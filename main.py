@@ -1,5 +1,7 @@
 import tkinter as tk
 import player as p1
+from map import Map
+from trap import Trap, Saw, CELL_SIZE
 # Paramètres du jeu
 WIDTH = 500
 HEIGHT = 400
@@ -15,6 +17,10 @@ class Game:
         # Création du Canvas
         self.canvas = tk.Canvas(root, width=WIDTH, height=HEIGHT, bg="lightblue")
         self.canvas.pack()
+
+        # Création de la carte
+        self.map = Map(self.canvas)
+
         self.player = p1.Player(self.canvas, self.root)
 
         # Plateformes
@@ -23,9 +29,26 @@ class Game:
             self.canvas.create_rectangle(150, 300, 250, 320, fill="brown"),
             self.canvas.create_rectangle(300, 200, 400, 220, fill="brown"),
         ]
-        self.update_game()
+        self.traps = [
+            Trap(self.canvas, 4, 6),
+            Saw(self.canvas, 7, 4)
+        ]
+        # Etat de la grille (visible ou non)
+        self.grid_visible = True
+        self.root.bind("<g>", self.toggle_grid)  # Toggle de la grille avec la touche "g"
 
-    def update_game(self):
+        self.defense(self.canvas)
+        self.updateAttack()
+
+    def defense(self, canvas):
+        TrapButton = tk.Button(canvas, command=lambda: self.SetActiveTrap("SimpleTrap")).place(x=300, y=300)
+        ChainsawButton = tk.Button(
+            canvas, command=lambda: self.SetActiveTrap("ChainsawButton")
+        ).place(x=400, y=300)
+
+        pass
+
+    def updateAttack(self):
         # Appliquer la gravité
         self.player.player_dy += GRAVITY
         if self.player.Right_Movement == True:
@@ -67,9 +90,26 @@ class Game:
             self.player.on_ground = True
             self.player.player_wall_slide = False
 
-        # Relancer la boucle de jeu
-        self.root.after(20, self.update_game)
+        for trap in self.traps:
+            trap_coords = trap.get_coords()
+            if (x2 > trap_coords[0] and x1 < trap_coords[2] and
+                   y2 > trap_coords[1] and y1 < trap_coords[3]):
+                self.canvas.create_text(WIDTH // 2, HEIGHT // 2, text="Game Over!", fill="white", font=("Arial", 50))
+                return
 
+        # Relancer la boucle de jeu
+        self.root.after(20, self.updateAttack)
+
+    def toggle_grid(self, event):
+        # Alterner la visibilité de la grille
+        self.grid_visible = not self.grid_visible
+        if self.grid_visible:
+            self.map.draw_grid()  # Redessine la grille
+        else:
+            self.map.clear_grid()  # Efface la grille
+    def SetActiveTrap(self, choice):
+        self.ActiveTrap = choice
+        print(self.ActiveTrap)
 
 # Lancer le jeu
 root = tk.Tk()
