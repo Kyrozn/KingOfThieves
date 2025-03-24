@@ -1,10 +1,10 @@
 import tkinter as tk
-CELL_SIZE = 50
+from config import *
 
 class Trap:
     def __init__(self, canvas, x, y, color="black"):
-        trap_size = CELL_SIZE / 4
-        x1, y1 = x * CELL_SIZE, y * CELL_SIZE
+        trap_size = OBJECT_SIZE / 2
+        x1, y1 = x * OBJECT_SIZE, y * OBJECT_SIZE
         x2, y2 = x1 + trap_size, y1 + trap_size
         self.canvas = canvas
         self.trap = canvas.create_rectangle(x1, y1, x2, y2, fill=color)

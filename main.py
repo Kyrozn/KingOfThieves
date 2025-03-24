@@ -1,13 +1,8 @@
 import tkinter as tk
 from map import Map
-from trap import Trap, Saw, CELL_SIZE
-
-# Paramètres du jeu
-WIDTH = 500
-HEIGHT = 400
-GRAVITY = 1
-JUMP_STRENGTH = -11
-SPEED = 5
+from trap import Trap, Saw
+from player import Player
+from config import *
 
 class Game:
     def __init__(self, root):
@@ -22,13 +17,15 @@ class Game:
         self.map = Map(self.canvas)
 
         # Création du joueur
-        self.player = self.canvas.create_rectangle(1 * CELL_SIZE, 6 * CELL_SIZE, 1.5 * CELL_SIZE, 6.5 * CELL_SIZE, fill="red")
+        self.player = Player(self.canvas, self.root)
 
         # Plateformes
         self.platforms = [
-            self.map.create_platform(0, 7, 10, 1),  # Sol
-            self.map.create_platform(3, 5, 2, 1),
-            self.map.create_platform(6, 3, 2, 1)
+            self.map.create_platform(0, 8, 7, 1),  # Sol
+            self.map.create_platform(2, 6, 4, 1),
+            self.map.create_platform(8, 4, 2, 1),
+            self.map.create_platform(4, 0, 4, 1),
+            self.map.create_platform(2, 2, 2, 1)
         ]
 
         # Pièges
@@ -36,11 +33,6 @@ class Game:
             Trap(self.canvas, 4, 6),
             Saw(self.canvas, 7, 4)
         ]
-
-        # Variables du joueur
-        self.player_dx = 0
-        self.player_dy = 0
-        self.on_ground = False
 
         # Etat de la grille (visible ou non)
         self.grid_visible = True
@@ -52,23 +44,37 @@ class Game:
         self.root.bind("<KeyRelease>", self.stop_movement)
         self.root.bind("<g>", self.toggle_grid)  # Toggle de la grille avec la touche "g"
 
+        # Lier l'événement de clic à la fonction
+        self.canvas.bind("<Button-1>", self.get_cell_coords)
+
         # Lancement de la boucle du jeu
         self.update_game()
 
+    def get_cell_coords(self, event):
+        # Calcul de la cellule cliquée
+        cell_x = event.x // CELL_SIZE
+        cell_y = event.y // CELL_SIZE
+
+        # Affichage des coordonnées
+        print(f"Cellule cliquée : ({cell_x}, {cell_y})")
+
+        # Optionnel : afficher un repère visuel sur la grille
+        x1, y1 = cell_x * CELL_SIZE, cell_y * CELL_SIZE
+        x2, y2 = x1 + CELL_SIZE, y1 + CELL_SIZE
+        self.canvas.create_rectangle(x1, y1, x2, y2)
+
     def move_left(self, event):
-        self.player_dx = -SPEED
+        self.player.move_left()
 
     def move_right(self, event):
-        self.player_dx = SPEED
+        self.player.move_right()
 
     def stop_movement(self, event):
         if event.keysym in ["Left", "Right"]:
-            self.player_dx = 0
+            self.player.player_dx = 0
 
     def jump(self, event):
-        if self.on_ground:
-            self.player_dy = JUMP_STRENGTH
-            self.on_ground = False
+        self.player.jump(event)
 
     def toggle_grid(self, event):
         # Alterner la visibilité de la grille
@@ -80,33 +86,33 @@ class Game:
 
     def update_game(self):
         # Appliquer la gravité
-        self.player_dy += GRAVITY
+        self.player.player_dy += GRAVITY
 
         # Déplacement du joueur
-        self.canvas.move(self.player, self.player_dx, self.player_dy)
+        self.canvas.move(self.player.cube, self.player.player_dx, self.player.player_dy)
 
         # Récupérer la position actuelle du joueur
-        x1, y1, x2, y2 = self.canvas.coords(self.player)
+        x1, y1, x2, y2 = self.canvas.coords(self.player.cube)
 
         # Gestion des collisions avec le sol et les plateformes
-        self.on_ground = False
+        self.player.on_ground = False
         for platform in self.platforms:
             px1, py1, px2, py2 = self.canvas.coords(platform)
             # Collision par le bas
             if y2 >= py1 and y1 < py1 and x2 > px1 and x1 < px2:
-                self.canvas.move(self.player, 0, py1 - y2)  # Ajuste la position
-                self.player_dy = 0
-                self.on_ground = True
+                self.canvas.move(self.player.cube, 0, py1 - y2)  # Ajuste la position
+                self.player.player_dy = 0
+                self.player.on_ground = True
 
         # Empêcher le joueur de sortir de l'écran
         if x1 < 0:
-            self.canvas.move(self.player, -x1, 0)
+            self.canvas.move(self.player.cube, -x1, 0)
         if x2 > WIDTH:
-            self.canvas.move(self.player, WIDTH - x2, 0)
+            self.canvas.move(self.player.cube, WIDTH - x2, 0)
         if y2 > HEIGHT:
-            self.canvas.move(self.player, 0, HEIGHT - y2)
-            self.player_dy = 0
-            self.on_ground = True
+            self.canvas.move(self.player.cube, 0, HEIGHT - y2)
+            self.player.player_dy = 0
+            self.player.on_ground = True
 
         # Gestion de la collision avec les pièges
         for trap in self.traps:

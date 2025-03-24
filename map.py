@@ -1,7 +1,6 @@
 import tkinter as tk
-CELL_SIZE = 50
-WIDTH = 500
-HEIGHT = 400
+from config import *
+
 class Map:
     def __init__(self, canvas):
         self.canvas = canvas
@@ -11,7 +10,7 @@ class Map:
 
     def create_platform(self, x, y, width, height):
         x1, y1 = x * CELL_SIZE, y * CELL_SIZE
-        x2, y2 = x1 + width * CELL_SIZE, y1 + height * CELL_SIZE
+        x2, y2 = x1 + width * OBJECT_SIZE, y1 + height * OBJECT_SIZE
         platform = self.canvas.create_rectangle(x1, y1, x2, y2, fill="brown")
         self.platforms.append(platform)
         return platform
