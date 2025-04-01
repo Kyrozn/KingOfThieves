@@ -2,15 +2,19 @@ import config as conf
 
 class Player:
 
-    def __init__(self, canvas, root):
+    def __init__(self, canvas, root, x=None, y=None):
         self.canvas = canvas
         self.root = root
-        # Création du joueur
-        self.cube = self.canvas.create_rectangle(50, 300, 80, 330, fill="red")
+        if x is None:
+            x = 50  # valeur par défaut
+        if y is None:
+            y = 300  # valeur par défaut
+        # Création du joueur (ici un carré de 30x30 par exemple)
+        self.cube = self.canvas.create_rectangle(x, y, x + 30, y + 30, fill="red")
 
         # Variables du joueur
-        self.player_dx = 0
-        self.player_dy = 0
+        self.player_dx = 0.0
+        self.player_dy = 0.0
         self.Right_Movement = True
         self.player_wall_slide = False
         self.on_ground = False
@@ -25,10 +29,17 @@ class Player:
         self.player_dx = conf.SPEED
 
     def jump(self, event):
+        x1, y1, x2, y2 = self.canvas.coords(self.cube)
+        center_x = (x1 + x2) / 2
+        center_y = (y1 + y2) / 2
+        print(x1, x2)
+        print(y1, y2)
         if self.on_ground:
+            print("Centre du cube :", center_x, center_y)
             self.player_dy = conf.JUMP_STRENGTH
             self.on_ground = False
         if self.player_wall_slide:
+            print("Centre du cube :", center_x, center_y)
             self.player_dy = conf.JUMP_STRENGTH
             self.on_ground = False
             self.Right_Movement = not self.Right_Movement
