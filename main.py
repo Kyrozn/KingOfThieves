@@ -2,6 +2,8 @@ import tkinter as tk
 from map import Map
 from trap import *
 from player import Player
+from chest import Chest
+from door import Door 
 from config import *
 
 class Game:
@@ -9,29 +11,35 @@ class Game:
         self.root = root
         self.root.title("Jeu de Plateforme - Tkinter")
 
-        # Création du Canvas
         self.canvas = tk.Canvas(root, width=WIDTH, height=HEIGHT, bg="lightblue")
         self.canvas.pack()
-
-        # Création de la carte
         self.map = Map(self.canvas)
 
-        # Création du joueur
-        self.player = Player(self.canvas, self.root)
+        # Création de la porte (qui servira de spawn)
+        self.door = Door(self.canvas, x=10, y=6, width=CELL_SIZE, height=2 * CELL_SIZE)
+        door_coords = self.door.get_coords()
+        spawn_x = (door_coords[0] + door_coords[2]) / 2
+        spawn_y = door_coords[3]
 
+        # Création du joueur à partir de la porte
+        # (Assurez-vous que Player accepte une position initiale, sinon ajustez)
+        self.player = Player(self.canvas, self.root, x=spawn_x, y=spawn_y)
         # Plateformes
         self.platforms = [
-            self.map.create_platform(0, 8, 7, 1),  # Sol avec l'inventaire
+            self.map.create_platform(0, 8, 7, 1),  # Sol (avec inventaire par exemple)
             self.map.create_platform(2, 6, 4, 1),
             self.map.create_platform(8, 4, 2, 1),
             self.map.create_platform(4, 0, 4, 1),
             self.map.create_platform(2, 2, 2, 1)
         ]
 
+        # Instanciation du coffre à une position choisie (ex. en haut à droite)
+        self.chest = Chest(self.canvas, x=2.25, y=0.75, width= 1.5 * CELL_SIZE, height= 1.25 *CELL_SIZE)
+
         # Pièges
         self.traps = []
         self.occupied_cells = set()  # Stocke les positions des pièges
-        self.placed_traps = {"Grindur": False, "Saw": False}  # Limite à un piège par type
+        self.placed_traps = {"Grindur": False, "Saw": False}  # Limite à un seul piège par type
 
         # Inventaire
         self.selected_trap = None
@@ -42,7 +50,6 @@ class Game:
         self.root.bind("<Right>", self.move_right)
         self.root.bind("<space>", self.jump)
         self.root.bind("<KeyRelease>", self.stop_movement)
-        # self.root.bind("<g>", self.toggle_grid)
 
         # Lier l'événement de clic pour récupérer les coordonnées et placer un piège
         self.canvas.bind("<Button-1>", self.get_cell_coords)
@@ -51,7 +58,7 @@ class Game:
         self.update_game()
 
     def create_inventory(self):
-        """ Crée l'inventaire sur la plateforme (0,8,7,1) """
+        """ Crée l'inventaire sur la plateforme """
         inventory_x = 400
         inventory_y = HEIGHT - 60  # Position sur la plateforme en bas
 
@@ -63,7 +70,7 @@ class Game:
             inventory_x += 70  # Espacement des boutons
 
     def select_trap(self, trap_name):
-        # Si un piège a déjà été sélectionné, on le remplace par le nouveau
+        # Remplacer la sélection précédente par le nouveau
         self.selected_trap = trap_name
         print(f"Piège sélectionné : {self.selected_trap}")
 
@@ -71,15 +78,10 @@ class Game:
         cell_x = event.x // CELL_SIZE
         cell_y = event.y // CELL_SIZE
 
-        # Affichage des coordonnées
+        # Affichage des coordonnées dans la console
         print(f"Cellule cliquée : ({cell_x}, {cell_y})")
 
-        # Afficher un repère visuel temporaire
-        x1, y1 = cell_x * CELL_SIZE, cell_y * CELL_SIZE
-        x2, y2 = x1 + CELL_SIZE, y1 + CELL_SIZE
-        self.canvas.create_rectangle(x1, y1, x2, y2,)
-
-        # Appeler la fonction pour placer le piège
+        # Appeler la fonction pour placer le piège (sans repère visuel)
         self.place_trap(cell_x, cell_y)
 
     def place_trap(self, cell_x, cell_y):
@@ -87,7 +89,7 @@ class Game:
             print("Aucun piège sélectionné !")
             return
 
-        # Vérifier si un piège du même type a déjà été placé
+        # Limiter à un seul piège par type
         if self.placed_traps[self.selected_trap]:
             print(f"Un piège de type {self.selected_trap} a déjà été placé !")
             return
@@ -109,19 +111,11 @@ class Game:
 
         self.traps.append(new_trap)
         self.occupied_cells.add(cell_position)  # Marquer la cellule comme occupée
-        self.placed_traps[self.selected_trap] = True  # Marquer ce piège comme placé
+        self.placed_traps[self.selected_trap] = True  # Limiter à un seul par type
         print(f"Piège {self.selected_trap} placé à ({cell_x}, {cell_y})")
 
-        # Désélectionner le piège après placement (pour éviter une réutilisation)
+        # Désélectionner le piège après placement
         self.selected_trap = None
-
-    # def toggle_grid(self, event):
-    #     # Alterner la visibilité de la grille
-    #     self.grid_visible = not self.grid_visible
-    #     if self.grid_visible:
-    #         self.map.draw_grid()  # Redessine la grille
-    #     else:
-    #         self.map.clear_grid()  # Efface la grille
 
     def move_left(self, event):
         self.player.move_left()
@@ -140,9 +134,10 @@ class Game:
         self.player.player_dy += GRAVITY
         self.canvas.move(self.player.cube, self.player.player_dx, self.player.player_dy)
 
+        # Récupérer la position actuelle du joueur
         x1, y1, x2, y2 = self.canvas.coords(self.player.cube)
-
         self.player.on_ground = False
+
         for platform in self.platforms:
             px1, py1, px2, py2 = self.canvas.coords(platform)
             if y2 >= py1 and y1 < py1 and x2 > px1 and x1 < px2:
@@ -159,12 +154,20 @@ class Game:
             self.player.player_dy = 0
             self.player.on_ground = True
 
+        # Vérifier la collision avec les pièges
         for trap in self.traps:
             trap_coords = trap.get_coords()
             if (x2 > trap_coords[0] and x1 < trap_coords[2] and
                     y2 > trap_coords[1] and y1 < trap_coords[3]):
                 self.canvas.create_text(WIDTH // 2, HEIGHT // 2, text="Game Over!", fill="white", font=("Arial", 50))
                 return
+
+        # Vérifier la collision avec le coffre
+        chest_coords = self.canvas.coords(self.chest.box)
+        if (x2 > chest_coords[0] and x1 < chest_coords[2] and
+                y2 > chest_coords[1] and y1 < chest_coords[3]):
+            self.canvas.create_text(WIDTH // 2, HEIGHT // 2, text="You Win!", fill="green", font=("Arial", 50))
+            return
 
         self.root.after(20, self.update_game)
 
