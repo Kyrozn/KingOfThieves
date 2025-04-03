@@ -16,10 +16,10 @@ class Game:
         self.map = Map(self.canvas)
 
         # Création de la porte (qui servira de spawn)
-        self.door = Door(self.canvas, x=10, y=6, width=CELL_SIZE, height=2 * CELL_SIZE)
+        self.door = Door(self.canvas, x=10.25, y=6.75, width=1.25 * CELL_SIZE, height=1.25 * CELL_SIZE)
         door_coords = self.door.get_coords()
         spawn_x = (door_coords[0] + door_coords[2]) / 2
-        spawn_y = door_coords[3]
+        spawn_y = door_coords[3] - 30
 
         # Création du joueur à partir de la porte
         # (Assurez-vous que Player accepte une position initiale, sinon ajustez)
@@ -45,11 +45,14 @@ class Game:
         self.selected_trap = None
         self.create_inventory()
 
+        self.grid_visible = True
+
         # Détection des touches
         self.root.bind("<Left>", self.move_left)
         self.root.bind("<Right>", self.move_right)
         self.root.bind("<space>", self.jump)
         self.root.bind("<KeyRelease>", self.stop_movement)
+        self.root.bind("<g>", self.toggle_grid)
 
         # Lier l'événement de clic pour récupérer les coordonnées et placer un piège
         self.canvas.bind("<Button-1>", self.get_cell_coords)
@@ -58,7 +61,6 @@ class Game:
         self.update_game()
 
     def create_inventory(self):
-        """ Crée l'inventaire sur la plateforme """
         inventory_x = 400
         inventory_y = HEIGHT - 60  # Position sur la plateforme en bas
 
@@ -129,6 +131,14 @@ class Game:
 
     def jump(self, event):
         self.player.jump(event)
+
+    def toggle_grid(self, event):
+         # Alterner la visibilité de la grille
+         self.grid_visible = not self.grid_visible
+         if self.grid_visible:
+             self.map.draw_grid()  # Redessine la grille
+         else:
+             self.map.clear_grid()  # Efface la grille
 
     def update_game(self):
         self.player.player_dy += GRAVITY
