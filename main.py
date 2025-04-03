@@ -15,15 +15,18 @@ class Game:
         self.canvas.pack()
         self.map = Map(self.canvas)
 
-        # Création de la porte (qui servira de spawn)
+        # Création de la porte (spawn)
         self.door = Door(self.canvas, x=10.25, y=6.75, width=1.25 * CELL_SIZE, height=1.25 * CELL_SIZE)
         door_coords = self.door.get_coords()
         spawn_x = (door_coords[0] + door_coords[2]) / 2
         spawn_y = door_coords[3] - 30
 
+        # Instanciation du coffre à une position choisie
+        self.chest = Chest(self.canvas, x=2.25, y=0.75, width= 1.5 * CELL_SIZE, height= 1.25 *CELL_SIZE)
+
         # Création du joueur à partir de la porte
-        # (Assurez-vous que Player accepte une position initiale, sinon ajustez)
         self.player = Player(self.canvas, self.root, x=spawn_x, y=spawn_y)
+
         # Plateformes
         self.platforms = [
             self.map.create_platform(0, 8, 7, 1),  # Sol (avec inventaire par exemple)
@@ -32,9 +35,6 @@ class Game:
             self.map.create_platform(4, 0, 4, 1),
             self.map.create_platform(2, 2, 2, 1)
         ]
-
-        # Instanciation du coffre à une position choisie (ex. en haut à droite)
-        self.chest = Chest(self.canvas, x=2.25, y=0.75, width= 1.5 * CELL_SIZE, height= 1.25 *CELL_SIZE)
 
         # Pièges
         self.traps = []
@@ -166,9 +166,7 @@ class Game:
 
         # Vérifier la collision avec les pièges
         for trap in self.traps:
-            trap_coords = trap.get_coords()
-            if (x2 > trap_coords[0] and x1 < trap_coords[2] and
-                    y2 > trap_coords[1] and y1 < trap_coords[3]):
+            if trap.check_collision(x1, y1, x2 - x1, y2 - y1):
                 self.canvas.create_text(WIDTH // 2, HEIGHT // 2, text="Game Over!", fill="white", font=("Arial", 50))
                 return
 
