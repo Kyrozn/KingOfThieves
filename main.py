@@ -1,7 +1,7 @@
 import tkinter as tk
 from map import Map
 from trap import *
-from player import Player
+import player as p1
 from chest import Chest
 from door import Door 
 from config import *
@@ -14,18 +14,18 @@ class Game:
         self.canvas = tk.Canvas(root, width=WIDTH, height=HEIGHT, bg="lightblue")
         self.canvas.pack()
         self.map = Map(self.canvas)
+        self.health_icons = []
 
-        # Création de la porte (spawn)
-        self.door = Door(self.canvas, x=10.25, y=6.75, width=1.25 * CELL_SIZE, height=1.25 * CELL_SIZE)
+        self.door = Door(self.canvas, x=10.25, y=6.75, width=1.5 * CELL_SIZE, height=1.25 * CELL_SIZE)
         door_coords = self.door.get_coords()
-        spawn_x = (door_coords[0] + door_coords[2]) / 2
-        spawn_y = door_coords[3] - 30
-
+        self.spawn_x = (door_coords[0] + door_coords[2]) / 2
+        self.spawn_y = door_coords[3] - 30
+        # Création du joueur
+        self.player = p1.Player(self.canvas, self.root, x=self.spawn_x, y=self.spawn_y)
+        
         # Instanciation du coffre à une position choisie
         self.chest = Chest(self.canvas, x=2.25, y=0.75, width= 1.5 * CELL_SIZE, height= 1.25 *CELL_SIZE)
 
-        # Création du joueur à partir de la porte
-        self.player = Player(self.canvas, self.root, x=spawn_x, y=spawn_y)
 
         # Plateformes
         self.platforms = [
@@ -37,13 +37,15 @@ class Game:
         ]
 
         # Pièges
-        self.traps = []
+        self.traps = [Grindur(self.canvas, 12,2), Saw(self.canvas, 5,5), Bomb(self.canvas, 2,4)]
         self.occupied_cells = set()  # Stocke les positions des pièges
-        self.placed_traps = {"Grindur": False, "Saw": False}  # Limite à un seul piège par type
+        self.placed_traps = {"Grindur": False, "Saw": False, "Bomb": False}  # Limite à un seul piège par type
 
         # Inventaire
         self.selected_trap = None
         self.create_inventory()
+
+        self.create_health()
 
         self.grid_visible = True
 
@@ -61,15 +63,36 @@ class Game:
         self.update_game()
 
     def create_inventory(self):
-        inventory_x = 400
-        inventory_y = HEIGHT - 60  # Position sur la plateforme en bas
+        inventory_x = 350
+        inventory_y = HEIGHT - 70  # Position sur la plateforme en bas
 
-        trap_types = [("Grindur", "yellow"), ("Saw", "gray")]
+        trap_types = [("Grindur", "teal"), ("Saw", "gray"), ("Bomb", "white")]
 
         for name, color in trap_types:
             btn = tk.Button(self.root, text=name, bg=color, command=lambda n=name: self.select_trap(n))
             btn.place(x=inventory_x, y=inventory_y, width=60, height=30)
             inventory_x += 70  # Espacement des boutons
+
+    def create_health(self):
+        self.health_icons = []  # Stocke les icônes de vie pour les mettre à jour
+
+        health_x = 400  # Position de départ à gauche
+        health_y = 20  # Position en haut
+
+        for i in range(self.player.lifeRemaining):  # Affiche autant de coeurs que de vies restantes
+            heart = self.canvas.create_oval(health_x, health_y, health_x + 30, health_y + 30, fill="red", outline="black")
+            self.health_icons.append(heart)
+            health_x += 40  # Espacement entre les coeurs
+
+    def update_health_display(self):
+        # Supprime les coeurs actuels
+        for heart in self.health_icons:
+            self.canvas.delete(heart)
+
+        # Affiche les coeurs restants
+        self.create_health()
+
+
 
     def select_trap(self, trap_name):
         # Remplacer la sélection précédente par le nouveau
@@ -108,6 +131,8 @@ class Game:
             new_trap = Grindur(self.canvas, cell_x, cell_y)
         elif self.selected_trap == "Saw":
             new_trap = Saw(self.canvas, cell_x, cell_y)
+        elif self.selected_trap == "Bomb":
+            new_trap = Bomb(self.canvas, cell_x, cell_y)
         else:
             return
 
@@ -141,6 +166,16 @@ class Game:
              self.map.clear_grid()  # Efface la grille
 
     def update_game(self):
+
+        if self.player.lifeRemaining == 0:
+            self.canvas.create_text(
+                WIDTH // 2,
+                HEIGHT // 2,
+                text="Game Over!",
+                fill="white",
+                font=("Arial", 50),
+            )
+
         self.player.player_dy += GRAVITY
         self.canvas.move(self.player.cube, self.player.player_dx, self.player.player_dy)
 
@@ -167,8 +202,9 @@ class Game:
         # Vérifier la collision avec les pièges
         for trap in self.traps:
             if trap.check_collision(x1, y1, x2 - x1, y2 - y1):
-                self.canvas.create_text(WIDTH // 2, HEIGHT // 2, text="Game Over!", fill="white", font=("Arial", 50))
-                return
+                self.player.lifeRemaining -= 1
+                self.update_health_display()
+                self.nextLife()
 
         # Vérifier la collision avec le coffre
         chest_coords = self.canvas.coords(self.chest.box)
@@ -179,9 +215,44 @@ class Game:
 
         self.root.after(20, self.update_game)
 
+    def nextLife(self):
+        self.player.setposition(self.spawn_x, self.spawn_y)
 
-# Lancer le jeu
+
+class Menu:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Game Menu")
+
+        self.canvas = tk.Canvas(root, width=WIDTH, height=HEIGHT, bg="lightblue")
+        self.canvas.pack()
+
+        self.create_buttons()
+
+    def create_buttons(self):
+        btn1 = tk.Button(self.root, text="Player", command=self.start_player_mode, width=20, height=2)
+        btn2 = tk.Button(self.root, text="AI", command=self.start_ai_mode, width=20, height=2)
+        btn3 = tk.Button(self.root, text="Player vs AI", command=self.start_pvp_ai_mode, width=20, height=2)
+
+        btn1.place(x=400, y=80)
+        btn2.place(x=400, y=130)
+        btn3.place(x=400, y=180)
+
+    def start_player_mode(self):
+        # Supprime les éléments du menu
+        for widget in self.root.winfo_children():
+            widget.destroy()
+
+        # Démarre le jeu en mode joueur
+        game = Game(self.root)
+
+    def start_ai_mode(self):
+        print("AI mode is not implemented yet!")
+
+    def start_pvp_ai_mode(self):
+        print("Player vs AI mode is not implemented yet!")
+
 if __name__ == "__main__":
     root = tk.Tk()
-    game = Game(root)
+    menu = Menu(root)
     root.mainloop()

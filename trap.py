@@ -35,4 +35,8 @@ class Saw(Trap):
 
 class Grindur(Trap):
     def __init__(self, canvas, x, y):
-        super().__init__(canvas, x, y, color="yellow")
+        super().__init__(canvas, x, y, color="teal")
+
+class Bomb(Trap):
+    def __init__(self, canvas, x, y):
+        super().__init__(canvas, x, y, color="black")

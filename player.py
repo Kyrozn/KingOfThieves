@@ -17,6 +17,7 @@ class Player:
         self.player_dx = 0
         self.player_dy = 0
         self.on_ground = False
+        self.lifeRemaining = 3
 
     def move_left(self):
         self.player_dx = -SPEED
@@ -28,3 +29,8 @@ class Player:
         if self.on_ground:
             self.player_dy = JUMP_STRENGTH
             self.on_ground = False
+    def setposition(self, x, y):
+        self.canvas.coords(self.cube, x,y,x+30,y+30)
+        self.Right_Movement = True
+        self.player_wall_slide = False
+        self.on_ground = False
