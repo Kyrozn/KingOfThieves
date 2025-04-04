@@ -18,8 +18,10 @@ class Player:
         self.Right_Movement = True
         self.player_wall_slide = False
         self.on_ground = False
-
+        self.lifeRemaining = 3
         self.root.bind("<space>", self.jump)
+        self.ActionNb = 0
+        self.jumpPos: list[tuple] = []
         self.move_right()
 
     def move_left(self):
@@ -44,3 +46,10 @@ class Player:
             self.on_ground = False
             self.Right_Movement = not self.Right_Movement
             self.player_wall_slide = False
+        self.ActionNb+=1
+        self.jumpPos.append((center_x, center_y))
+    def setposition(self, x, y):
+        self.canvas.coords(self.cube, x,y,x+30,y+30)
+        self.Right_Movement = True
+        self.player_wall_slide = False
+        self.on_ground = False

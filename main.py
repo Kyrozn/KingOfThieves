@@ -1,11 +1,13 @@
 import tkinter as tk
 from chest import Chest
+import data
 from door import Door
 import player as p1
 from map import Map
 from trap import *
 import config as conf
-
+import pandas as pd
+import time
 
 class Game:
 
@@ -22,16 +24,18 @@ class Game:
         # Création de la carte
         self.map = Map(self.canvas)
         # Création de la porte (qui servira de spawn)
-        self.door = Door(self.canvas, x=10, y=6, width=CELL_SIZE, height=2 * CELL_SIZE)
+        self.door = Door(self.canvas, x=10.25, y=6.75, width=1.25 * CELL_SIZE, height=1.25 * CELL_SIZE)
         door_coords = self.door.get_coords()
-        spawn_x = (door_coords[0] + door_coords[2]) / 2
-        spawn_y = door_coords[3]
+        self.spawn_x = (door_coords[0] + door_coords[2]) / 2
+        self.spawn_y = door_coords[3] - 30
         # Création du joueur
-        self.player = p1.Player(self.canvas, self.root, x=spawn_x, y=spawn_y)
+        self.player = p1.Player(self.canvas, self.root, x=self.spawn_x, y=self.spawn_y)
         # Instanciation du coffre à une position choisie (ex. en haut à droite)
-        self.chest = Chest(
-            self.canvas, x=2.25, y=0.75, width=1.5 * CELL_SIZE, height=1.25 * CELL_SIZE
-        )
+        self.chest = Chest(self.canvas, x=2.25, y=0.75, width= 1.5 * CELL_SIZE, height= 1.25 *CELL_SIZE)
+        chestx1, chesty1, chestx2, chesty2 = self.chest.get_coords()
+        chestCenterX = (chestx1 + chestx2) / 2
+        chestCenterY = (chesty1 + chesty2) / 2
+
         # Plateformes
         self.platforms = [
             self.map.create_platform(0, 8, 7, 1),  # Sol avec l'inventaire
@@ -42,12 +46,12 @@ class Game:
         ]
 
         # Pièges et état des cellules
-        self.traps = []
+        self.traps = [Grindur(self.canvas, 12, 2)]
         self.occupied_cells = set()  # Stocke les positions des pièges
         self.placed_traps = {
             "Grindur": False,
             "Saw": False,
-        }  # Limite à un piège par type
+        }
 
         # Inventaire
         self.selected_trap = None
@@ -55,11 +59,26 @@ class Game:
 
         # Etat de la grille (visible ou non)
         self.grid_visible = True
-        self.root.bind(
-            "<g>", self.toggle_grid
-        )  # Toggle de la grille avec la touche "g"
-
+        self.root.bind("<g>", self.toggle_grid)  # Toggle de la grille avec la touche "g"
+        self.colision = False
         # Mise à jour de l'attaque
+        self.dataFrame = pd.DataFrame(
+            [
+                {
+                    "StartPos": (self.spawn_x, self.spawn_y),
+                    "ObjectifPos": (chestCenterX, chestCenterY),
+                    "Piege1": (2, 3),
+                    "Piege2": (4, 5),
+                    "Piege3": (6, 7),
+                    "Win": None,
+                    "Try": None,
+                    "Temps": None,
+                    "ActNb": None,
+                    "JumpsPos": None,
+                }
+            ]
+        )
+        self.timer = time.time()
         self.updateAttack()
 
     def create_inventory(self):
@@ -138,28 +157,30 @@ class Game:
 
     def updateAttack(self):
         """Met à jour l'attaque et les mouvements"""
+        if self.player.lifeRemaining == 0:
+            self.canvas.create_text(
+                WIDTH // 2,
+                HEIGHT // 2,
+                text="Game Over!",
+                fill="white",
+                font=("Arial", 50),
+            )
+            self.updateFinalDT(False)
+            return
         # Appliquer la gravité
         if not self.player.on_ground:
             self.player.player_dy += conf.GRAVITY
-            (
+            if self.player.Right_Movement:
                 self.player.move_right()
-                if self.player.Right_Movement
-                else self.player.move_left()
-            )
+            else: 
+                self.player.move_left()
 
         # Déplacement du joueur
         self.canvas.move(self.player.cube, self.player.player_dx, self.player.player_dy)
 
         # Vérification du déplacement et ajustement de la gravité
-        if (
-            self.player.player_dy > 0
-            and not self.player.on_ground
-            and self.player.player_wall_slide
-            and not self.checkWallCollision()
-        ):
+        if self.player.player_dy > 0 and not self.player.on_ground and self.player.player_wall_slide and (self.checkWallCollision() or self.prevent_player_out_of_bounds()):
             self.player.player_dy *= 0.7
-        if self.player.player_wall_slide:
-            print("yalaiouh")
         # Vérification des collisions avec les murs
         self.checkWallCollision()
 
@@ -190,6 +211,8 @@ class Game:
                 fill="green",
                 font=("Arial", 50),
             )
+            self.timer = time.time() - self.timer
+            self.updateFinalDT(True)
             return True
         return False
     def prevent_player_out_of_bounds(self):
@@ -200,39 +223,31 @@ class Game:
             self.canvas.move(self.player.cube, -x1, 0)
             if not self.player.on_ground:
                 self.player.player_wall_slide = True
-        if x2 > conf.WIDTH:
+            self.colision = True
+        elif x2 > conf.WIDTH:
             self.canvas.move(self.player.cube, conf.WIDTH - x2, 0)
             if not self.player.on_ground:
                 self.player.player_wall_slide = True
+            self.colision = True
         if y2 > conf.HEIGHT:
             self.canvas.move(self.player.cube, 0, conf.HEIGHT - y2)
             self.player.player_dy = 0
             self.player.on_ground = True
             self.player.player_wall_slide = False
-        if y1 <= 0:
+            self.colision = True
+        elif y1 <= 0:
             self.canvas.move(self.player.cube, 0, 0)
             self.player.player_dy = 0
-            self.player.player_wall_slide = False
+            self.colision = True
+        return self.colision
 
     def check_trap_collisions(self):
         """Vérifie les collisions avec les pièges"""
         x1, y1, x2, y2 = self.canvas.coords(self.player.cube)
         for trap in self.traps:
-            trap_coords = trap.get_coords()
-            if (
-                x2 > trap_coords[0]
-                and x1 < trap_coords[2]
-                and y2 > trap_coords[1]
-                and y1 < trap_coords[3]
-            ):
-                self.canvas.create_text(
-                    conf.WIDTH // 2,
-                    conf.HEIGHT // 2,
-                    text="Game Over!",
-                    fill="white",
-                    font=("Arial", 50),
-                )
-                return
+            if trap.check_collision(x1, y1, x2 - x1, y2 - y1):
+                self.player.lifeRemaining -= 1
+                self.nextLife()
 
     def toggle_grid(self, event):
         """Alterne la visibilité de la grille"""
@@ -250,8 +265,8 @@ class Game:
     def checkWallCollision(self):
         """Vérifie les collisions avec les murs et plateformes"""
         x1, y1, x2, y2 = self.canvas.coords(self.player.cube)
-        self.player.on_ground = False
         self.colision = False
+        self.player.on_ground = False
         for platform in self.platforms:
             px1, py1, px2, py2 = self.canvas.coords(platform)
             # Collision par la gauche
@@ -278,6 +293,11 @@ class Game:
                 self.player.player_dy = 0
                 self.colision = True
         return self.colision
+    def updateFinalDT(self, win: bool):
+        self.dataFrame.loc[1, ["Win", "Try", "Temps", "ActNb", "JumpsPos"]] = [win, self.player.lifeRemaining, self.timer, self.player.ActionNb, self.player.jumpPos]
+        data.registerData(self.dataFrame)
+    def nextLife(self):
+        self.player.setposition(self.spawn_x, self.spawn_y)
 
 
 # Lancer le jeu

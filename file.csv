@@ -1,0 +1,86 @@
+StartPos,ObjectifPos,Piege1,Piege2,Piege3,Win,Try,Temps,ActNb,JumpsPos
+"(706.875, 490.0)","(195.0, 89.375)","0    (2, 3)
+1       NaN
+Name: Piege1, dtype: object","0    (4, 5)
+1       NaN
+Name: Piege2, dtype: object","0    (6, 7)
+1       NaN
+Name: Piege3, dtype: object","0    None
+1    True
+Name: Win, dtype: object","0    None
+1       3
+Name: Try, dtype: object","0         None
+1    52.842669
+Name: Temps, dtype: object","0    None
+1      21
+Name: ActNb, dtype: object","0                                                 None
+1    [(895.0, 505.0), (895.0, 430.79999999999984), ...
+Name: JumpsPos, dtype: object"
+"(706.875, 490.0)","(195.0, 89.375)","0    (2, 3)
+1       NaN
+Name: Piege1, dtype: object","0    (4, 5)
+1       NaN
+Name: Piege2, dtype: object","0    (6, 7)
+1       NaN
+Name: Piege3, dtype: object","0    None
+1    True
+Name: Win, dtype: object","0    None
+1       3
+Name: Try, dtype: object","0         None
+1    10.133641
+Name: Temps, dtype: object","0    None
+1       8
+Name: ActNb, dtype: object","0                                                 None
+1    [(816.875, 505.0), (895.0, 409.7999999999996),...
+Name: JumpsPos, dtype: object"
+"(706.875, 490.0)","(195.0, 89.375)","0    (2, 3)
+1       NaN
+Name: Piege1, dtype: object","0    (4, 5)
+1       NaN
+Name: Piege2, dtype: object","0    (6, 7)
+1       NaN
+Name: Piege3, dtype: object","0     None
+1    False
+Name: Win, dtype: object","0    None
+1       0
+Name: Try, dtype: object","0                 None
+1    1743750638.415642
+Name: Temps, dtype: object","0    None
+1       4
+Name: ActNb, dtype: object","0                                                 None
+1    [(836.875, 505.0), (895.0, 405.5999999999997),...
+Name: JumpsPos, dtype: object"
+"(706.875, 490.0)","(195.0, 89.375)","0    (2, 3)
+1       NaN
+Name: Piege1, dtype: object","0    (4, 5)
+1       NaN
+Name: Piege2, dtype: object","0    (6, 7)
+1       NaN
+Name: Piege3, dtype: object","0     None
+1    False
+Name: Win, dtype: object","0    None
+1       0
+Name: Try, dtype: object","0                 None
+1    1743750668.125767
+Name: Temps, dtype: object","0    None
+1       5
+Name: ActNb, dtype: object","0                                                 None
+1    [(826.875, 505.0), (891.875, 406.1999999999997...
+Name: JumpsPos, dtype: object"
+"(706.875, 490.0)","(195.0, 89.375)","0    (2, 3)
+1       NaN
+Name: Piege1, dtype: object","0    (4, 5)
+1       NaN
+Name: Piege2, dtype: object","0    (6, 7)
+1       NaN
+Name: Piege3, dtype: object","0     None
+1    False
+Name: Win, dtype: object","0    None
+1       0
+Name: Try, dtype: object","0                 None
+1    1743751451.106053
+Name: Temps, dtype: object","0    None
+1      12
+Name: ActNb, dtype: object","0                                                 None
+1    [(821.875, 505.0), (895.0, 407.39999999999964)...
+Name: JumpsPos, dtype: object"
