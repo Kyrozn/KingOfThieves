@@ -1,7 +1,6 @@
 import tkinter as tk
 from config import *
 
-
 class Map:
     def __init__(self, canvas):
         self.canvas = canvas

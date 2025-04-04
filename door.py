@@ -1,7 +1,6 @@
 import tkinter as tk
 from config import *
 
-
 class Door:
     def __init__(self, canvas, x, y, width=CELL_SIZE, height=2 * CELL_SIZE):
         self.canvas = canvas
@@ -17,11 +16,9 @@ class Door:
         handle_x = x2 - 2 * handle_radius
         handle_y = (y1 + y2) / 2
         self.handle = self.canvas.create_oval(
-            handle_x,
-            handle_y - handle_radius,
-            handle_x + 2 * handle_radius,
-            handle_y + handle_radius,
-            fill="silver",
+            handle_x, handle_y - handle_radius,
+            handle_x + 2 * handle_radius, handle_y + handle_radius,
+            fill="silver"
         )
 
     def get_coords(self):

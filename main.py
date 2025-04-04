@@ -14,16 +14,12 @@ class Game:
         self.root = root
         self.root.title("Jeu de Plateforme - Tkinter")
 
-        # Création du Canvas
-        self.canvas = tk.Canvas(
-            root, width=conf.WIDTH, height=conf.HEIGHT, bg="lightblue"
-        )
+        self.canvas = tk.Canvas(root, width=WIDTH, height=HEIGHT, bg="lightblue")
         self.canvas.pack()
-
-        # Création de la carte
         self.map = Map(self.canvas)
-        # Création de la porte (qui servira de spawn)
-        self.door = Door(self.canvas, x=10.25, y=6.75, width=1.25 * CELL_SIZE, height=1.25 * CELL_SIZE)
+        self.health_icons = []
+
+        self.door = Door(self.canvas, x=10.25, y=6.75, width=1.5 * CELL_SIZE, height=1.25 * CELL_SIZE)
         door_coords = self.door.get_coords()
         self.spawn_x = (door_coords[0] + door_coords[2]) / 2
         self.spawn_y = door_coords[3] - 30
@@ -126,7 +122,7 @@ class Game:
             print("Aucun piège sélectionné !")
             return
 
-        # Vérifier si un piège du même type a déjà été placé
+        # Limiter à un seul piège par type
         if self.placed_traps[self.selected_trap]:
             print(f"Un piège de type {self.selected_trap} a déjà été placé !")
             return
@@ -143,6 +139,8 @@ class Game:
             new_trap = Grindur(self.canvas, cell_x, cell_y)
         elif self.selected_trap == "Saw":
             new_trap = Saw(self.canvas, cell_x, cell_y)
+        elif self.selected_trap == "Bomb":
+            new_trap = Bomb(self.canvas, cell_x, cell_y)
         else:
             return
 
@@ -306,7 +304,40 @@ class Game:
         self.player.setposition(self.spawn_x, self.spawn_y)
 
 
-# Lancer le jeu
-root = tk.Tk()
-game = Game(root)
-root.mainloop()
+class Menu:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Game Menu")
+
+        self.canvas = tk.Canvas(root, width=WIDTH, height=HEIGHT, bg="lightblue")
+        self.canvas.pack()
+
+        self.create_buttons()
+
+    def create_buttons(self):
+        btn1 = tk.Button(self.root, text="Player", command=self.start_player_mode, width=20, height=2)
+        btn2 = tk.Button(self.root, text="AI", command=self.start_ai_mode, width=20, height=2)
+        btn3 = tk.Button(self.root, text="Player vs AI", command=self.start_pvp_ai_mode, width=20, height=2)
+
+        btn1.place(x=400, y=80)
+        btn2.place(x=400, y=130)
+        btn3.place(x=400, y=180)
+
+    def start_player_mode(self):
+        # Supprime les éléments du menu
+        for widget in self.root.winfo_children():
+            widget.destroy()
+
+        # Démarre le jeu en mode joueur
+        game = Game(self.root)
+
+    def start_ai_mode(self):
+        print("AI mode is not implemented yet!")
+
+    def start_pvp_ai_mode(self):
+        print("Player vs AI mode is not implemented yet!")
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    menu = Menu(root)
+    root.mainloop()
