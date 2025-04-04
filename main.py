@@ -10,7 +10,6 @@ import pandas as pd
 import time
 
 class Game:
-
     def __init__(self, root):
         self.root = root
         self.root.title("Jeu de Plateforme - Tkinter")
@@ -71,7 +70,7 @@ class Game:
                     "Piege2": (4, 5),
                     "Piege3": (6, 7),
                     "Win": None,
-                    "Try": None,
+                    "TryRemaining": None,
                     "Temps": None,
                     "ActNb": None,
                     "JumpsPos": None,
@@ -165,6 +164,7 @@ class Game:
                 fill="white",
                 font=("Arial", 50),
             )
+            self.timer = time.time() - self.timer
             self.updateFinalDT(False)
             return
         # Appliquer la gravité
@@ -294,7 +294,13 @@ class Game:
                 self.colision = True
         return self.colision
     def updateFinalDT(self, win: bool):
-        self.dataFrame.loc[1, ["Win", "Try", "Temps", "ActNb", "JumpsPos"]] = [win, self.player.lifeRemaining, self.timer, self.player.ActionNb, self.player.jumpPos]
+        self.dataFrame.loc[0, ["Win", "TryRemaining", "Temps", "ActNb", "JumpsPos"]] = [
+            win,
+            self.player.lifeRemaining,
+            self.timer,
+            self.player.ActionNb,
+            self.player.jumpPos,
+        ]
         data.registerData(self.dataFrame)
     def nextLife(self):
         self.player.setposition(self.spawn_x, self.spawn_y)
