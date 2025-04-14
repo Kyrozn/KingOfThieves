@@ -22,9 +22,10 @@ class Player:
         self.player_wall_slide = False
         self.on_ground = False
         self.lifeRemaining = 3
-        self.root.bind("<space>", self.jump)
         self.ActionNb = 0
         self.jumpPos: list[tuple] = []
+
+        self.root.bind("<space>", lambda event: self.jump())
         self.move_right()
 
     def move_left(self):

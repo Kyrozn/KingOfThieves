@@ -213,7 +213,6 @@ class Game:
             center_x = (x1 + x2) / 2
             center_y = (y1 + y2) / 2
             actposition = (round(round_up_to_5(center_x),1), round(round_up_to_5(center_y), 1))
-            print(actposition)
             if actposition in self.runchoose["JumpsPos"]:
                 self.player.jump()
         # Appliquer la gravité
