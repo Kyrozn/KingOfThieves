@@ -10,7 +10,8 @@ import pandas as pd
 import time
 
 class Game:
-    def __init__(self, root):
+    def __init__(self, root, player):
+        self.playerType = player
         self.root = root
         self.root.title("Jeu de Plateforme - Tkinter")
 
@@ -24,7 +25,7 @@ class Game:
         self.spawn_x = (door_coords[0] + door_coords[2]) / 2
         self.spawn_y = door_coords[3] - 30
         # Création du joueur
-        self.player = p1.Player(self.canvas, self.root, x=self.spawn_x, y=self.spawn_y)
+
         # Instanciation du coffre à une position choisie (ex. en haut à droite)
         self.chest = Chest(self.canvas, x=2.25, y=0.75, width= 1.5 * CELL_SIZE, height= 1.25 *CELL_SIZE)
         chestx1, chesty1, chestx2, chesty2 = self.chest.get_coords()
@@ -41,7 +42,11 @@ class Game:
         ]
 
         # Pièges et état des cellules
-        self.traps = [Grindur(self.canvas, 12, 2)]
+        self.traps = [
+            Grindur(self.canvas, 12, 2),
+            Saw(self.canvas, 5, 5),
+            Bomb(self.canvas, 2, 4),
+        ]
         self.occupied_cells = set()  # Stocke les positions des pièges
         self.placed_traps = {
             "Grindur": False,
@@ -49,8 +54,19 @@ class Game:
         }
 
         # Inventaire
+        if self.playerType == "human":
+            self.player = p1.Player(
+                self.canvas, self.root, x=self.spawn_x, y=self.spawn_y
+            )
+        else:
+            self.player = p1.AI(self.canvas, self.root, x=self.spawn_x, y=self.spawn_y)
+            gamesdataFrame = data.getData()
+            self.runchoose = self.player.decisionMaker(gamesdataFrame)
+
         self.selected_trap = None
         self.create_inventory()
+
+        self.create_health()
 
         # Etat de la grille (visible ou non)
         self.grid_visible = True
@@ -62,9 +78,9 @@ class Game:
                 {
                     "StartPos": (self.spawn_x, self.spawn_y),
                     "ObjectifPos": (chestCenterX, chestCenterY),
-                    "Piege1": (2, 3),
-                    "Piege2": (4, 5),
-                    "Piege3": (6, 7),
+                    "Piege1": (12, 2),
+                    "Piege2": (5, 5),
+                    "Piege3": (2, 4),
                     "Win": None,
                     "TryRemaining": None,
                     "Temps": None,
@@ -77,11 +93,10 @@ class Game:
         self.updateAttack()
 
     def create_inventory(self):
-        """Crée l'inventaire sur la plateforme (0,8,7,1)"""
-        inventory_x = 400
-        inventory_y = conf.HEIGHT - 60  # Position sur la plateforme en bas
+        inventory_x = 350
+        inventory_y = HEIGHT - 70  # Position sur la plateforme en bas
 
-        trap_types = [("Grindur", "yellow"), ("Saw", "gray")]
+        trap_types = [("Grindur", "teal"), ("Saw", "gray"), ("Bomb", "white")]
 
         for name, color in trap_types:
             btn = tk.Button(
@@ -92,6 +107,34 @@ class Game:
             )
             btn.place(x=inventory_x, y=inventory_y, width=60, height=30)
             inventory_x += 70  # Espacement des boutons
+
+    def create_health(self):
+        self.health_icons = []  # Stocke les icônes de vie pour les mettre à jour
+
+        health_x = 400  # Position de départ à gauche
+        health_y = 20  # Position en haut
+
+        for i in range(
+            self.player.lifeRemaining
+        ):  # Affiche autant de coeurs que de vies restantes
+            heart = self.canvas.create_oval(
+                health_x,
+                health_y,
+                health_x + 30,
+                health_y + 30,
+                fill="red",
+                outline="black",
+            )
+            self.health_icons.append(heart)
+            health_x += 40  # Espacement entre les coeurs
+
+    def update_health_display(self):
+        # Supprime les coeurs actuels
+        for heart in self.health_icons:
+            self.canvas.delete(heart)
+
+        # Affiche les coeurs restants
+        self.create_health()
 
     def select_trap(self, trap_name):
         """Sélectionner un piège"""
@@ -165,6 +208,14 @@ class Game:
             self.timer = time.time() - self.timer
             self.updateFinalDT(False)
             return
+        if self.playerType != "human":
+            x1, y1, x2, y2 = self.canvas.coords(self.player.cube)
+            center_x = (x1 + x2) / 2
+            center_y = (y1 + y2) / 2
+            actposition = (round(round_up_to_5(center_x),1), round(round_up_to_5(center_y), 1))
+            print(actposition)
+            if actposition in self.runchoose["JumpsPos"]:
+                self.player.jump()
         # Appliquer la gravité
         if not self.player.on_ground:
             self.player.player_dy += conf.GRAVITY
@@ -245,6 +296,7 @@ class Game:
         for trap in self.traps:
             if trap.check_collision(x1, y1, x2 - x1, y2 - y1):
                 self.player.lifeRemaining -= 1
+                self.update_health_display()
                 self.nextLife()
 
     def toggle_grid(self, event):
@@ -317,11 +369,9 @@ class Menu:
     def create_buttons(self):
         btn1 = tk.Button(self.root, text="Player", command=self.start_player_mode, width=20, height=2)
         btn2 = tk.Button(self.root, text="AI", command=self.start_ai_mode, width=20, height=2)
-        btn3 = tk.Button(self.root, text="Player vs AI", command=self.start_pvp_ai_mode, width=20, height=2)
 
         btn1.place(x=400, y=80)
         btn2.place(x=400, y=130)
-        btn3.place(x=400, y=180)
 
     def start_player_mode(self):
         # Supprime les éléments du menu
@@ -329,13 +379,20 @@ class Menu:
             widget.destroy()
 
         # Démarre le jeu en mode joueur
-        game = Game(self.root)
+        Game(self.root, "human")
 
     def start_ai_mode(self):
-        print("AI mode is not implemented yet!")
+        # Supprime les éléments du menu
+        for widget in self.root.winfo_children():
+            widget.destroy()
 
-    def start_pvp_ai_mode(self):
-        print("Player vs AI mode is not implemented yet!")
+        # Démarre le jeu en mode ia
+        Game(self.root, "ai")
+
+
+def round_up_to_5(n):
+    return ((n + 4) // 5) * 5
+
 
 if __name__ == "__main__":
     root = tk.Tk()

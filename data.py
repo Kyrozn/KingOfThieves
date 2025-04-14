@@ -23,3 +23,7 @@ def registerData(dataFrame: pandas.DataFrame):
             ]
         )
     print("Données enregistrées avec succès !")
+
+def getData():
+    if os.path.exists(csv_file):
+        return pandas.read_csv(csv_file, index_col=0)
