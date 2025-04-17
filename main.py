@@ -8,6 +8,7 @@ from trap import *
 import config as conf
 import pandas as pd
 import time
+from graph import *
 
 class Game:
     def __init__(self, root, player):
@@ -368,9 +369,11 @@ class Menu:
     def create_buttons(self):
         btn1 = tk.Button(self.root, text="Player", command=self.start_player_mode, width=20, height=2)
         btn2 = tk.Button(self.root, text="AI", command=self.start_ai_mode, width=20, height=2)
+        btn3 = tk.Button(self.root, text="Graph", command=self.start_graph, width=20, height=2)
 
         btn1.place(x=400, y=80)
         btn2.place(x=400, y=130)
+        btn3.place(x=400, y=180)
 
     def start_player_mode(self):
         # Supprime les éléments du menu
@@ -388,7 +391,35 @@ class Menu:
         # Démarre le jeu en mode ia
         Game(self.root, "ai")
 
+    def start_graph(self):
+        # Supprime les éléments du menu
+        for widget in self.root.winfo_children():
+            widget.destroy()
 
+        # Démarre le graphique avec back_to_menu_callback
+        dataframe = DataLoader("file.csv").load_data()
+        Plotter(self.root, dataframe, self.back_to_menu)
+
+    def back_to_menu(self):
+        # Remplacer l'interface actuelle par l'interface du menu principal
+        for widget in self.root.winfo_children():
+            widget.destroy()
+        self.create_main_menu()
+
+    def create_main_menu(self):
+        # Code pour créer l'interface du menu principal
+        button_plotter = tk.Button(self.root, text="Voir Graphiques", command=self.go_to_plotter)
+        button_plotter.pack()
+
+
+def round_up_to_5(n):
+    return ((n + 4) // 5) * 5
+
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    menu = Menu(root)
+    root.mainloop()
 def round_up_to_5(n):
     return ((n + 4) // 5) * 5
 
