@@ -1,7 +1,8 @@
 import tkinter as tk
-from config import *
-from game import Game
+from core.config import *
+from game.game import Game
 from utils.graph import *
+
 class Menu:
     def __init__(self, root):
         self.root = root

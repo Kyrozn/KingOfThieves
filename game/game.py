@@ -1,13 +1,14 @@
 from core.config import *
+from game.chest import Chest
+from game.door import Door
+from game.player import Player as p1
+from game.trap import Trap
+from game.map import Map
 import pandas as pd
-from chest import Chest
 import data
-from door import Door
-import player as p1
-from map import Map
 import tkinter as tk
 import time
-from trap import *
+
 class Game:
     def __init__(self, root, player):
         self.playerType = player
