@@ -1,5 +1,4 @@
 from core.config import *
-
 import ast
 
 class Player:

@@ -1,5 +1,5 @@
 import tkinter as tk
-from menu import Menu
+from core.menu import Menu
 
 if __name__ == "__main__":
     root = tk.Tk()

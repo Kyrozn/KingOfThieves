@@ -1,13 +1,14 @@
 from core.config import *
 import pandas as pd
-from chest import Chest
-import data
-from door import Door
-import player as p1
-from map import Map
+from games.chest import Chest
+from data.data import *
+from games.door import Door
+from games.player  import * 
+from games.map import Map
 import tkinter as tk
 import time
-from trap import *
+from games.trap import *
+
 class Game:
     def __init__(self, root, player):
         self.playerType = player
@@ -58,12 +59,13 @@ class Game:
 
         # Inventaire
         if self.playerType == "human":
-            self.player = p1.Player(
+            self.player = Player(
                 self.canvas, self.root, x=self.spawn_x, y=self.spawn_y
             )
         else:
-            self.player = p1.AI(self.canvas, self.root, x=self.spawn_x, y=self.spawn_y)
-            gamesdataFrame = data.getData()
+            self.player = AI(self.canvas, self.root, x=self.spawn_x, y=self.spawn_y)
+            gamesdataFrame = getData()
+            print(gamesdataFrame)
             self.runchoose = self.player.decisionMaker(gamesdataFrame)
             self.nbOfJump = 0
 
@@ -370,7 +372,7 @@ class Game:
             self.player.ActionNb,
             self.player.jumpPos,
         ]
-        data.registerData(self.dataFrame)
+        registerData(self.dataFrame)
 
     def nextLife(self):
         self.player.setposition(self.spawn_x, self.spawn_y)

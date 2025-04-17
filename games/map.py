@@ -1,5 +1,5 @@
 import tkinter as tk
-from config import *
+from core.config import *
 
 class Map:
     def __init__(self, canvas):

@@ -2,7 +2,7 @@ import csv
 import os
 import pandas
 # File name
-csv_file = "file.csv"
+csv_file = "data/file.csv"
 
 # Function to register data
 def registerData(dataFrame: pandas.DataFrame):
