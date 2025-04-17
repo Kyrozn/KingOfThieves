@@ -1,5 +1,5 @@
 import tkinter as tk
-from config import *
+from core.config import *
 
 class Chest:
     def __init__(self, canvas, x, y, width=2 * CELL_SIZE, height=CELL_SIZE):

@@ -1,7 +1,6 @@
+from core.config import *
+
 import ast
-import tkinter as tk
-from config import *
-from main import round_up_to_5
 
 class Player:
     def __init__(self, canvas, root, x=None, y=None):
@@ -78,9 +77,11 @@ class AI(Player):
     def decisionMaker(self, dataframe):
         filtered_df = dataframe[dataframe["Win"] == True]
         sorted_df = filtered_df.sort_values(
-            by=[
-                "TryRemaining", "Temps", "ActNb"
-            ],
+            by=["TryRemaining"],
+            ascending=False,
+        )
+        sorted_df = sorted_df.sort_values(
+            by=["Temps", "ActNb"],
             ascending=True,
         )
         best_row = sorted_df.iloc[0].copy()

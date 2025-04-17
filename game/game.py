@@ -1,15 +1,13 @@
-import tkinter as tk
+from core.config import *
+import pandas as pd
 from chest import Chest
 import data
 from door import Door
 import player as p1
 from map import Map
-from trap import *
-import config as conf
-import pandas as pd
+import tkinter as tk
 import time
-from graph import *
-
+from trap import *
 class Game:
     def __init__(self, root, player):
         self.playerType = player
@@ -21,14 +19,18 @@ class Game:
         self.map = Map(self.canvas)
         self.health_icons = []
 
-        self.door = Door(self.canvas, x=10.25, y=6.75, width=1.5 * CELL_SIZE, height=1.25 * CELL_SIZE)
+        self.door = Door(
+            self.canvas, x=10.25, y=6.75, width=1.5 * CELL_SIZE, height=1.25 * CELL_SIZE
+        )
         door_coords = self.door.get_coords()
         self.spawn_x = (door_coords[0] + door_coords[2]) / 2
         self.spawn_y = door_coords[3] - 30
         # Création du joueur
 
         # Instanciation du coffre à une position choisie (ex. en haut à droite)
-        self.chest = Chest(self.canvas, x=2.25, y=0.75, width= 1.5 * CELL_SIZE, height= 1.25 *CELL_SIZE)
+        self.chest = Chest(
+            self.canvas, x=2.25, y=0.75, width=1.5 * CELL_SIZE, height=1.25 * CELL_SIZE
+        )
         chestx1, chesty1, chestx2, chesty2 = self.chest.get_coords()
         chestCenterX = (chestx1 + chestx2) / 2
         chestCenterY = (chesty1 + chesty2) / 2
@@ -72,7 +74,9 @@ class Game:
 
         # Etat de la grille (visible ou non)
         self.grid_visible = True
-        self.root.bind("<g>", self.toggle_grid)  # Toggle de la grille avec la touche "g"
+        self.root.bind(
+            "<g>", self.toggle_grid
+        )  # Toggle de la grille avec la touche "g"
         self.colision = False
         # Mise à jour de l'attaque
         self.dataFrame = pd.DataFrame(
@@ -145,17 +149,17 @@ class Game:
 
     def get_cell_coords(self, event):
         """Récupère les coordonnées de la cellule cliquée"""
-        cell_x = event.x // conf.CELL_SIZE
-        cell_y = event.y // conf.CELL_SIZE
+        cell_x = event.x // CELL_SIZE
+        cell_y = event.y // CELL_SIZE
 
         print(f"Cellule cliquée : ({cell_x}, {cell_y})")
 
         # Afficher un repère visuel temporaire
         self.canvas.create_rectangle(
-            cell_x * conf.CELL_SIZE,
-            cell_y * conf.CELL_SIZE,
-            (cell_x + 1) * conf.CELL_SIZE,
-            (cell_y + 1) * conf.CELL_SIZE,
+            cell_x * CELL_SIZE,
+            cell_y * CELL_SIZE,
+            (cell_x + 1) * CELL_SIZE,
+            (cell_y + 1) * CELL_SIZE,
         )
 
         # Appeler la fonction pour placer le piège
@@ -214,25 +218,33 @@ class Game:
             x1, y1, x2, y2 = self.canvas.coords(self.player.cube)
             center_x = (x1 + x2) / 2
             center_y = (y1 + y2) / 2
-            actposition = (round(round_up_to_5(center_x),1), round(round_up_to_5(center_y), 1))
+            actposition = (
+                round(round_up_to_5(center_x), 1),
+                round(round_up_to_5(center_y), 1),
+            )
             if self.nbOfJump < len(self.runchoose["JumpsPos"]):
                 if actposition == self.runchoose["JumpsPos"][self.nbOfJump]:
                     self.player.jump()
-                    self.nbOfJump+=1
-                
+                    self.nbOfJump += 1
+
         # Appliquer la gravité
         if not self.player.on_ground:
-            self.player.player_dy += conf.GRAVITY
+            self.player.player_dy += GRAVITY
             if self.player.Right_Movement:
                 self.player.move_right()
-            else: 
+            else:
                 self.player.move_left()
 
         # Déplacement du joueur
         self.canvas.move(self.player.cube, self.player.player_dx, self.player.player_dy)
 
         # Vérification du déplacement et ajustement de la gravité
-        if self.player.player_dy > 0 and not self.player.on_ground and self.player.player_wall_slide and (self.checkWallCollision() or self.prevent_player_out_of_bounds()):
+        if (
+            self.player.player_dy > 0
+            and not self.player.on_ground
+            and self.player.player_wall_slide
+            and (self.checkWallCollision() or self.prevent_player_out_of_bounds())
+        ):
             self.player.player_dy *= 0.7
         # Vérification des collisions avec les murs
         self.checkWallCollision()
@@ -249,16 +261,14 @@ class Game:
         # Relancer la boucle de jeu
         self.root.after(20, self.updateAttack)
 
-
-
     def check_Chest_collisions(self):
         x1, y1, x2, y2 = self.canvas.coords(self.player.cube)
         chest_coords = self.canvas.coords(self.chest.box)
         if (
-           x2 > chest_coords[0]
-           and x1 < chest_coords[2]
-           and y2 > chest_coords[1]
-           and y1 < chest_coords[3]
+            x2 > chest_coords[0]
+            and x1 < chest_coords[2]
+            and y2 > chest_coords[1]
+            and y1 < chest_coords[3]
         ):
             self.canvas.create_text(
                 WIDTH // 2,
@@ -271,6 +281,7 @@ class Game:
             self.updateFinalDT(True)
             return True
         return False
+
     def prevent_player_out_of_bounds(self):
         """Empêche le joueur de sortir de l'écran"""
         x1, y1, x2, y2 = self.canvas.coords(self.player.cube)
@@ -280,13 +291,13 @@ class Game:
             if not self.player.on_ground:
                 self.player.player_wall_slide = True
             self.colision = True
-        elif x2 > conf.WIDTH:
-            self.canvas.move(self.player.cube, conf.WIDTH - x2, 0)
+        elif x2 > WIDTH:
+            self.canvas.move(self.player.cube, WIDTH - x2, 0)
             if not self.player.on_ground:
                 self.player.player_wall_slide = True
             self.colision = True
-        if y2 > conf.HEIGHT:
-            self.canvas.move(self.player.cube, 0, conf.HEIGHT - y2)
+        if y2 > HEIGHT:
+            self.canvas.move(self.player.cube, 0, HEIGHT - y2)
             self.player.player_dy = 0
             self.player.on_ground = True
             self.player.player_wall_slide = False
@@ -350,6 +361,7 @@ class Game:
                 self.player.player_dy = 0
                 self.colision = True
         return self.colision
+
     def updateFinalDT(self, win: bool):
         self.dataFrame.loc[0, ["Win", "TryRemaining", "Temps", "ActNb", "JumpsPos"]] = [
             win,
@@ -359,73 +371,6 @@ class Game:
             self.player.jumpPos,
         ]
         data.registerData(self.dataFrame)
+
     def nextLife(self):
         self.player.setposition(self.spawn_x, self.spawn_y)
-
-
-class Menu:
-    def __init__(self, root):
-        self.root = root
-        self.root.title("Game Menu")
-
-        self.canvas = tk.Canvas(root, width=WIDTH, height=HEIGHT, bg="lightblue")
-        self.canvas.pack()
-
-        self.create_buttons()
-
-    def create_buttons(self):
-        btn1 = tk.Button(self.root, text="Player", command=self.start_player_mode, width=20, height=2)
-        btn2 = tk.Button(self.root, text="AI", command=self.start_ai_mode, width=20, height=2)
-        btn3 = tk.Button(self.root, text="Graph", command=self.start_graph, width=20, height=2)
-
-        btn1.place(x=400, y=80)
-        btn2.place(x=400, y=130)
-        btn3.place(x=400, y=180)
-
-    def start_player_mode(self):
-        # Supprime les éléments du menu
-        for widget in self.root.winfo_children():
-            widget.destroy()
-
-        # Démarre le jeu en mode joueur
-        game = Game(self.root, "human")
-        game.start_countdown()
-
-    def start_ai_mode(self):
-        # Supprime les éléments du menu
-        for widget in self.root.winfo_children():
-            widget.destroy()
-
-        # Démarre le jeu en mode ia
-        Game(self.root, "ai")
-
-    def start_graph(self):
-        # Supprime les éléments du menu
-        for widget in self.root.winfo_children():
-            widget.destroy()
-
-        # Démarre le graphique avec back_to_menu_callback
-        dataframe = DataLoader("file.csv").load_data()
-        Plotter(self.root, dataframe, self.back_to_menu)
-
-    def back_to_menu(self):
-        # Remplacer l'interface actuelle par l'interface du menu principal
-        for widget in self.root.winfo_children():
-            widget.destroy()
-        self.root = root
-        self.root.title("Game Menu")
-
-        self.canvas = tk.Canvas(root, width=WIDTH, height=HEIGHT, bg="lightblue")
-        self.canvas.pack()
-
-        self.create_buttons()
-
-
-def round_up_to_5(n):
-    return ((n + 4) // 5) * 5
-
-
-if __name__ == "__main__":
-    root = tk.Tk()
-    menu = Menu(root)
-    root.mainloop()

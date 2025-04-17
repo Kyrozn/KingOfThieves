@@ -10,3 +10,6 @@ HEIGHT = CELL_SIZE * GRID_HEIGHT
 GRAVITY = 1
 JUMP_STRENGTH = -14.60
 SPEED = 5
+
+def round_up_to_5(n):
+    return ((n + 4) // 5) * 5
