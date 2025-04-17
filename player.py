@@ -78,7 +78,7 @@ class AI(Player):
     def decisionMaker(self, dataframe):
         filtered_df = dataframe[dataframe["Win"] == True]
         sorted_df = filtered_df.sort_values(
-            by=["Temps", "ActNb", "TryRemaining"], ascending=True
+            by=["TryRemaining","Temps", "ActNb" ], ascending=True
         )
         best_row = sorted_df.iloc[0].copy()
 
