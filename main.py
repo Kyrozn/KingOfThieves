@@ -244,6 +244,9 @@ class Game:
 
         # Relancer la boucle de jeu
         self.root.after(20, self.updateAttack)
+
+
+
     def check_Chest_collisions(self):
         x1, y1, x2, y2 = self.canvas.coords(self.player.cube)
         chest_coords = self.canvas.coords(self.chest.box)
@@ -381,7 +384,8 @@ class Menu:
             widget.destroy()
 
         # Démarre le jeu en mode joueur
-        Game(self.root, "human")
+        game = Game(self.root, "human")
+        game.start_countdown()
 
     def start_ai_mode(self):
         # Supprime les éléments du menu
@@ -404,22 +408,15 @@ class Menu:
         # Remplacer l'interface actuelle par l'interface du menu principal
         for widget in self.root.winfo_children():
             widget.destroy()
-        self.create_main_menu()
+        self.root = root
+        self.root.title("Game Menu")
 
-    def create_main_menu(self):
-        # Code pour créer l'interface du menu principal
-        button_plotter = tk.Button(self.root, text="Voir Graphiques", command=self.go_to_plotter)
-        button_plotter.pack()
+        self.canvas = tk.Canvas(root, width=WIDTH, height=HEIGHT, bg="lightblue")
+        self.canvas.pack()
 
-
-def round_up_to_5(n):
-    return ((n + 4) // 5) * 5
+        self.create_buttons()
 
 
-if __name__ == "__main__":
-    root = tk.Tk()
-    menu = Menu(root)
-    root.mainloop()
 def round_up_to_5(n):
     return ((n + 4) // 5) * 5
 
