@@ -63,6 +63,7 @@ class Game:
             self.player = p1.AI(self.canvas, self.root, x=self.spawn_x, y=self.spawn_y)
             gamesdataFrame = data.getData()
             self.runchoose = self.player.decisionMaker(gamesdataFrame)
+            self.nbOfJump = 0
 
         self.selected_trap = None
         self.create_inventory()
@@ -214,8 +215,10 @@ class Game:
             center_x = (x1 + x2) / 2
             center_y = (y1 + y2) / 2
             actposition = (round(round_up_to_5(center_x),1), round(round_up_to_5(center_y), 1))
-            if actposition in self.runchoose["JumpsPos"]:
-                self.player.jump()
+            if self.nbOfJump < len(self.runchoose["JumpsPos"]):
+                if actposition == self.runchoose["JumpsPos"][self.nbOfJump]:
+                    self.player.jump()
+                    self.nbOfJump+=1
         # Appliquer la gravité
         if not self.player.on_ground:
             self.player.player_dy += conf.GRAVITY

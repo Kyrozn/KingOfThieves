@@ -78,13 +78,15 @@ class AI(Player):
     def decisionMaker(self, dataframe):
         filtered_df = dataframe[dataframe["Win"] == True]
         sorted_df = filtered_df.sort_values(
-            by=["Temps", "ActNb", "TryRemaining"], ascending=True
+            by=[
+                "TryRemaining", "Temps", "ActNb"
+            ],
+            ascending=True,
         )
         best_row = sorted_df.iloc[0].copy()
 
         # Convertir JumpsPos string -> liste de tuples
         if isinstance(best_row["JumpsPos"], str):
             best_row["JumpsPos"] = ast.literal_eval(best_row["JumpsPos"])
-            
 
         return best_row
